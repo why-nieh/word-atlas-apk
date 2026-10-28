@@ -35,8 +35,11 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Check Android SDK
+        run: |
+          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          ls "${ANDROID_HOME:-/usr/local/lib/android/sdk}/platforms" 2>/dev/null || true
+          ls "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" 2>/dev/null || true
 
       - name: Fetch upstream source
         run: |
