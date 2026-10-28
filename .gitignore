@@ -1,0 +1,5 @@
+app/
+out/
+node_modules/
+*.apk
+.DS_Store
