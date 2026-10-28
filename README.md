@@ -4,6 +4,26 @@
 
 本仓库不含上游代码和素材，构建时才从上游拉取——所以它只有几十 KB。
 
+## 已经出来的包
+
+**v1.0.3 · 646.7 MB** —— 已构建并发布，手机浏览器直接点：
+
+- 发布页：https://github.com/why-nieh/word-atlas-apk/releases/latest
+- 直链：https://github.com/why-nieh/word-atlas-apk/releases/download/v1.0.3/word-atlas-offline-v1.0.3.apk
+- 国内镜像（直链打不开时用这个）：https://gh-proxy.com/https://github.com/why-nieh/word-atlas-apk/releases/download/v1.0.3/word-atlas-offline-v1.0.3.apk
+
+包内实测构成（38,080 个条目）：
+
+| 内容 | 数量 | 体积 |
+| :--- | ---: | ---: |
+| 例句 / 单词录音 | 22,905 段 | 366 MB |
+| 插画（512px webp） | 7,298 张 | 185 MB |
+| 缩略图 | 7,298 张 | 70 MB |
+| 词库索引 + 66 个分块 | 67 个 | 7 MB |
+| 代码、字体、图标、界面音效 | — | 19 MB |
+
+所有资源都是**未压缩存储**（`noCompress`），音频才能随机 seek、拖进度条。
+
 ## 怎么出包
 
 1. 在 GitHub 新建一个仓库（**必须 public**，否则 Actions 消耗私有额度），把本目录推上去：
@@ -17,7 +37,7 @@
 
 2. 打开仓库的 **Actions → Build offline APK → Run workflow**。
 
-3. 等 20–40 分钟。产物在本次运行页面底部的 **Artifacts → word-atlas-apk**，下载解压得到 `word-atlas-N.apk`。
+3. 等 **4 分钟左右**（实测 3–4 分钟）。构建成功会自动发一个 Release，页面见上；也可以从本次运行页面底部的 **Artifacts** 下载。
 
 4. 手机安装：允许「安装未知来源应用」后直接点开 apk。
 
