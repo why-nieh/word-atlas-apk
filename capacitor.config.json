@@ -1,0 +1,12 @@
+{
+  "appId": "tech.nieh.wordatlas",
+  "appName": "词光",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
