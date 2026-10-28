@@ -1,94 +1,62 @@
-# 词光 · 完全离线安卓套壳
+# 哪吒学汉字 · 安卓离线套壳
 
-把 [word-atlas](https://github.com/designfuchen/word-atlas)（React + Vite 纯前端应用）用 Capacitor 包成原生 APK，**7298 幅插画、22905 段录音、词库数据全部打进包里，装到手机上断网可用**。
+把开源项目 [dhjz/hanzi-study](https://github.com/dhjz/hanzi-study)（哪吒学汉字）打包成**完全离线**的安卓 APK，针对 **4 岁中班**孩子做了适配。
 
-本仓库不含上游代码和素材，构建时才从上游拉取——所以它只有几十 KB。
+上游是纯静态站点（Vue 3 + hanzi-writer，无后端），整个站点 25 MB 已完整放入 `web/`，APK 约 28 MB，装完不联网也能用。
 
-## 已经出来的包
+## 包里有什么
 
-**v1.0.3 · 646.7 MB** —— 已构建并发布，手机浏览器直接点：
+| 模块 | 内容 | 4 岁适配说明 |
+| :--- | :--- | :--- |
+| 学汉字 | 1303 字，按难度递进：一二三四十口日月… | 前 120 字全是基础字；每字带拼音、词、例句、笔画动画、听音辨字、贴纸画 |
+| 学数学 | 10/99 以内加减 | **已把默认改成 10 以内**（十法），自带数字键盘，不弹系统输入法 |
+| 学古诗词 | 114 首课本古诗，全部配朗读音频 | 第一组就是咏鹅、静夜思、悯农、江南，能听能跟读 |
 
-- 发布页：https://github.com/why-nieh/word-atlas-apk/releases/latest
-- 直链：https://github.com/why-nieh/word-atlas-apk/releases/download/v1.0.3/word-atlas-offline-v1.0.3.apk
-- 国内镜像（直链打不开时用这个）：https://gh-proxy.com/https://github.com/why-nieh/word-atlas-apk/releases/download/v1.0.3/word-atlas-offline-v1.0.3.apk
+## 针对 4 岁做的改动（相对上游）
 
-包内实测构成（38,080 个条目）：
+见 `scripts/patch-web.mjs`，全部幂等：
 
-| 内容 | 数量 | 体积 |
-| :--- | ---: | ---: |
-| 例句 / 单词录音 | 22,905 段 | 366 MB |
-| 插画（512px webp） | 7,298 张 | 185 MB |
-| 缩略图 | 7,298 张 | 70 MB |
-| 词库索引 + 66 个分块 | 67 个 | 7 MB |
-| 代码、字体、图标、界面音效 | — | 19 MB |
+1. **数学默认十法**——上游默认 100 以内，4 岁直接劝退
+2. **老 WebView 兼容**——所有 `100dvh` 前置 `100vh` 兜底（Android 7/8 旧 WebView 不认识 dvh，整条声明会被忽略导致布局塌陷）
+3. **返回键接管**——数学/古诗页按返回回主界面，主界面再按一次才退出，防孩子误触直接杀掉 App
+4. **TTS 体检**——点字读音走系统语音合成，若本机没有中文 TTS 引擎（部分国产 ROM 的 WebView 会静音），连续 3 次失败后顶部弹一条给家长看的提示，不用 alert 吓孩子
 
-所有资源都是**未压缩存储**（`noCompress`），音频才能随机 seek、拖进度条。
+## 出包
 
-## 怎么出包
+本地不用装任何安卓工具链，全在 GitHub Actions：
 
-1. 在 GitHub 新建一个仓库（**必须 public**，否则 Actions 消耗私有额度），把本目录推上去：
+1. GitHub 建 **public** 仓库，推这个目录
+2. Actions → Build offline APK → Run workflow（push 到 main 也会自动触发）
+3. 约 5 分钟，Releases 页面出现 `nezha-hanzi-v1.0.N.apk`，手机直接下载安装
 
-   ```bash
-   cd word-atlas-android
-   git init && git add -A && git commit -m "init"
-   git remote add origin git@github.com:<你的账号>/word-atlas-apk.git
-   git push -u origin main
-   ```
+## 已构建产物
 
-2. 打开仓库的 **Actions → Build offline APK → Run workflow**。
+- **v1.0.3**：`nezha-hanzi-v1.0.3.apk`，26.77 MB
+- 下载页：`https://github.com/why-nieh/hanzi-study-apk/releases/latest`
+- 国内直连加速：`https://gh-proxy.com/https://github.com/why-nieh/hanzi-study-apk/releases/download/v1.0.3/nezha-hanzi-v1.0.3.apk`
+- 包内已核验（Range 解析中央目录）：676 条目，学汉字/数学/古诗全部素材在 `assets/public/`，130 个 mp3 全部未压缩存储（音频可随机 seek），全部断网可用
+- 首次构建踩坑记录：AGP 8 下 `aaptOptions`/`androidResources` 顶层块不可用，noCompress 必须追加进模板自带的 `defaultConfig > aaptOptions`；补丁注入不能按 `lastIndexOf("}")` 定位（会落进文件末尾 try/catch）
 
-3. 等 **4 分钟左右**（实测 3–4 分钟）。构建成功会自动发一个 Release，页面见上；也可以从本次运行页面底部的 **Artifacts** 下载。
+## 家长须知
 
-4. 手机安装：允许「安装未知来源应用」后直接点开 apk。
+- **进度强制顺序解锁**：每个字做完「画一画吧」（点对 10 次）才解锁下一个，每 6 个字一次听音辨字测验。孩子卡住了：**连点标题「哪吒学汉字」10 次**，输入关卡号即可跳关。
+- **进度存本机**（localStorage）：卸载 App 即清空，换机不迁移。
+- **书写笔画（🖋️）步骤对 4 岁偏早**：它不进解锁链，孩子玩不了可以不管，不影响学新字。
+- 点字读音依赖系统 TTS。装好后先点一个字试试有没有声音；没声音的话去系统设置里启用中文语音引擎（华为：小艺语音；或装"讯飞语记"），还不行来找我加原生 TTS 插件。
 
-> 首次构建慢在 Gradle 下载依赖和打包 650MB assets；之后重跑会快一些。
-
-## 构建流程里发生了什么
-
-```
-上游 clone → npm ci → npm run build（出 650MB 的 dist）
-  → 删掉 sw.js → cap add android（dist 整包拷进 assets/public）
-  → 打补丁（noCompress / 堆内存 / lint 放行）→ gradlew assembleDebug
-```
-
-补丁做了三件事，缺一件就会翻车：
-
-| 补丁 | 为什么 |
-| :--- | :--- |
-| `noCompress mp3/webp/json` | 这些格式本来就压不动；不压缩才能 `openFd` 随机读，音频拖动进度条才正常 |
-| `-Xmx6144m` | 3 万个 assets 条目打包，默认 1.5G 堆会直接 OOM |
-| `lint.abortOnError false` | 不让 lint 在出包最后一步拦路 |
-
-## 已知限制
-
-- **约 650MB**，安装后占 1.2GB 左右。全量离线是这个代价，砍不掉。
-- **没有后台播放**。息屏后发音会停——纯套壳拿不到 Android 的 MediaSession，要做得自己写原生前台服务。
-- **卸载 App 会清空学习进度**。进度在 WebView 的 localStorage 里，记得用 app 内的「导出进度」备份。
-- **星图是 WebGL2**，老机器可能掉帧，作者有降级方案，但低端机上体验一般。
-- 首次进「词库」页要解析 7MB 的 index.json，会有短暂卡顿。
-
-## 改名字 / 换图标
-
-- 应用名和包名：改 `capacitor.config.json` 的 `appName`、`appId`（`appId` 决定安装后是否和别的版本冲突）。
-- 图标：出包后替换 `app/android/app/src/main/res/mipmap-*`，或者在 CI 里加一步 `npx @capacitor/assets generate`（需要一张 1024×1024 的 png）。
-
-## 本地构建（这台机器不行）
-
-本机是 aarch64 麒麟，官方 Android SDK 命令行工具和 aapt2 只发 x86_64 包，硬装要自己编 aapt2，不值得。本地构建需要：
+## 本地开发（可选）
 
 ```bash
-# x86_64 Linux / macOS 上
-export ANDROID_HOME=~/Android/Sdk
-git clone --depth 1 https://github.com/designfuchen/word-atlas.git app
-cd app && npm ci && npm run build
-npm i -D @capacitor/cli@^7 && npm i @capacitor/core@^7 @capacitor/android@^7
-cp ../capacitor.config.json . && rm -f dist/sw.js && npx cap add android
-cd .. && node scripts/patch-android.mjs app/android
-cd app/android && ./gradlew assembleDebug
+npm install
+node scripts/patch-web.mjs     # 前端适配补丁
+npx cap add android            # 首次生成 android 工程
+npx cap sync android           # web/ 同步进 assets
+node scripts/patch-android.mjs android
+cd android && ./gradlew assembleDebug
 ```
 
-## 授权提醒
+## 授权与署名
 
-- 代码 MIT；词库、插画、录音 CC BY 4.0，**再分发必须署名** `Word Atlas contributors（词光）` 并注明修改。
-- `public/sfx/` 里的界面音效和配乐**不在** CC BY 4.0 范围内（README 只写「随应用一起提供」）。自己用没事；要公开发布，先删掉这个目录再把 `dist` 打进包。
-- 上架国内应用商店还需要软件著作权 + APP 备案，侧载安装不需要。
+- 上游代码与内容：MIT License，此处按其要求保留原仓库署名
+- 本仓库的构建脚本与适配补丁：MIT
+- `appimg/` 与形象图仅用于上游应用自身展示，勿单独用于商业用途
