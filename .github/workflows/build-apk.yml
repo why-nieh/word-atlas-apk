@@ -12,6 +12,9 @@ concurrency:
   group: apk-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 env:
   UPSTREAM: https://github.com/designfuchen/word-atlas.git
 
@@ -80,7 +83,7 @@ jobs:
       - name: Collect APK
         run: |
           mkdir -p out
-          cp app/android/app/build/outputs/apk/debug/*.apk "out/word-atlas-${{ github.run_number }}.apk"
+          cp app/android/app/build/outputs/apk/debug/*.apk "out/word-atlas-offline-v1.0.${{ github.run_number }}.apk"
           ls -lh out
 
       - name: Upload APK
@@ -90,3 +93,18 @@ jobs:
           path: out/*.apk
           compression-level: 0
           retention-days: 30
+
+      - name: Publish to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: 词光离线版 v1.0.${{ github.run_number }}
+          body: |
+            完全离线 APK：7298 幅插画 + 22905 段录音 + 词库全量内置，断网可用。
+
+            - 体积约 646MB，安装后占用约 1.2GB
+            - 应用代码 MIT；词库、插画、录音 CC BY 4.0 — Word Atlas contributors（词光）
+            - 上游项目：https://github.com/designfuchen/word-atlas
+          files: out/*.apk
+          draft: false
+          prerelease: false
